@@ -310,8 +310,10 @@ export type Database = {
           code_id: string | null
           created_at: string
           email: string | null
+          full_name: string | null
           id: string
           plan: Database["public"]["Enums"]["plan_type"] | null
+          post_credits: number
           referral_code: string
           referral_count: number
           referred_by: string | null
@@ -320,8 +322,10 @@ export type Database = {
           code_id?: string | null
           created_at?: string
           email?: string | null
+          full_name?: string | null
           id: string
           plan?: Database["public"]["Enums"]["plan_type"] | null
+          post_credits?: number
           referral_code: string
           referral_count?: number
           referred_by?: string | null
@@ -330,8 +334,10 @@ export type Database = {
           code_id?: string | null
           created_at?: string
           email?: string | null
+          full_name?: string | null
           id?: string
           plan?: Database["public"]["Enums"]["plan_type"] | null
+          post_credits?: number
           referral_code?: string
           referral_count?: number
           referred_by?: string | null
@@ -359,6 +365,7 @@ export type Database = {
     }
     Functions: {
       consume_daily_quota: { Args: { _amount: number }; Returns: Json }
+      consume_post_credit: { Args: { _amount: number }; Returns: Json }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
