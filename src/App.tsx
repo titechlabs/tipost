@@ -6,6 +6,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Landing from "./pages/Landing.tsx";
 import AppPage from "./pages/AppPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import AdminLayout from "./pages/admin/AdminLayout.tsx";
+import Dashboard from "./pages/admin/Dashboard.tsx";
+import AccessCodes from "./pages/admin/AccessCodes.tsx";
+import Users from "./pages/admin/Users.tsx";
+import PostHistoryAdmin from "./pages/admin/PostHistoryAdmin.tsx";
+import Referrals from "./pages/admin/Referrals.tsx";
+import Coupons from "./pages/admin/Coupons.tsx";
+import Revenue from "./pages/admin/Revenue.tsx";
+import Analytics from "./pages/admin/Analytics.tsx";
+import Settings from "./pages/admin/Settings.tsx";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +28,17 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/app" element={<AppPage />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="codes" element={<AccessCodes />} />
+            <Route path="users" element={<Users />} />
+            <Route path="history" element={<PostHistoryAdmin />} />
+            <Route path="referrals" element={<Referrals />} />
+            <Route path="coupons" element={<Coupons />} />
+            <Route path="revenue" element={<Revenue />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
