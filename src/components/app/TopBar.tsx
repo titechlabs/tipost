@@ -1,7 +1,9 @@
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { ChangePasswordDialog } from "@/components/app/ChangePasswordDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +27,7 @@ export function TopBar({
   limit: number;
   avatarUrl?: string | null;
 }) {
+  const [pwOpen, setPwOpen] = useState(false);
   const planColor: Record<Plan, string> = {
     free: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     starter: "bg-sky-500/15 text-sky-300 border-sky-500/30",
@@ -61,6 +64,9 @@ export function TopBar({
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">{email}</div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setPwOpen(true)}>
+                <KeyRound size={14} className="mr-2" /> Change password
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
                 <LogOut size={14} className="mr-2" /> Sign out
               </DropdownMenuItem>
@@ -78,6 +84,7 @@ export function TopBar({
           {used}/{limit} posts today
         </span>
       </div>
+      <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} email={email} />
     </header>
   );
 }
