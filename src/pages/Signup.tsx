@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { AuthShell, AuthHeader, AuthField, BackToHome } from "@/components/auth/AuthShell";
+import { AuthShell, AuthHeader, AuthField, BackToHome, GoogleIcon } from "@/components/auth/AuthShell";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -54,6 +55,20 @@ export default function Signup() {
     }
   };
 
+  const signUpWithGoogle = async () => {
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/app`,
+    });
+    if (result.error) {
+      setLoading(false);
+      toast.error(result.error.message || "Google sign-in failed.");
+      return;
+    }
+    if (result.redirected) return;
+    navigate("/app", { replace: true });
+  };
+
   return (
     <AuthShell>
       <AuthHeader
@@ -71,6 +86,23 @@ export default function Signup() {
           className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
         >
           {loading ? "Creating account..." : "Create account"}
+        </Button>
+        <div className="relative my-2">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-background px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
+        <Button
+          type="button"
+          onClick={signUpWithGoogle}
+          disabled={loading}
+          variant="outline"
+          className="w-full h-11 rounded-full font-medium"
+        >
+          <GoogleIcon /> Continue with Google
         </Button>
         <p className="text-xs text-muted-foreground text-center">
           Already have an account?{" "}
