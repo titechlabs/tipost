@@ -7,6 +7,10 @@ import Landing from "./pages/Landing.tsx";
 import AppPage from "./pages/AppPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import Login from "./pages/Login.tsx";
+import Signup from "./pages/Signup.tsx";
+import PricingPage from "./pages/Pricing.tsx";
+import AdminLogin from "./pages/AdminLogin.tsx";
 import AdminLayout from "./pages/admin/AdminLayout.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import AccessCodes from "./pages/admin/AccessCodes.tsx";
@@ -29,7 +33,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/app" element={<AppPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="codes" element={<AccessCodes />} />
