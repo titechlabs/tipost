@@ -1,0 +1,4 @@
+project_id = "tipost"
+
+[functions.generate-posts]
+verify_jwt = false
