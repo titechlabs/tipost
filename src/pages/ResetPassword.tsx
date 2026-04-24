@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { Logo } from "@/components/Logo";
+import { AuthShell, AuthHeader } from "@/components/auth/AuthShell";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ResetPassword() {
@@ -52,13 +52,11 @@ export default function ResetPassword() {
 
   return (
     <AuthShell>
-      <div className="text-center">
-        <Logo size="lg" />
-        <h1 className="font-display text-2xl mt-6">Set a new password</h1>
-        <p className="text-muted-foreground mt-2 text-sm">
-          {ready ? "Choose a new password for your account." : "Verifying reset link…"}
-        </p>
-      </div>
+      <AuthHeader
+        title="Set a new"
+        highlight="password"
+        subtitle={ready ? "Choose a new password for your account." : "Verifying reset link…"}
+      />
       {ready && (
         <form onSubmit={onSubmit} className="space-y-4 mt-8">
           <div className="space-y-2">
@@ -86,9 +84,13 @@ export default function ResetPassword() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
+            className="btn-gradient w-full h-11"
           >
-            {loading ? "Updating…" : "Update password"}
+            {loading ? (
+              <><Loader2 size={16} className="mr-2 animate-spin" />Updating…</>
+            ) : (
+              "Update password"
+            )}
           </Button>
         </form>
       )}
