@@ -78,7 +78,7 @@ export default function AppPage() {
     );
   }
 
-  if (!session) return <LoginGate />;
+  if (!session) return <LoginGate variant="user" />;
 
   if (hasCode === false) {
     return (
