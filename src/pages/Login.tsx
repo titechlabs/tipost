@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { AuthShell, AuthHeader, AuthField, BackToHome, GoogleIcon } from "@/components/auth/AuthShell";
+import { Loader2 } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [showGoogleHint, setShowGoogleHint] = useState(false);
 
   useEffect(() => {
     document.title = "Sign in — TiPost";
@@ -27,10 +29,14 @@ export default function Login() {
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setShowGoogleHint(false);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast.error(error.message || "Sign-in failed.");
+      if (/invalid login credentials/i.test(error.message || "")) {
+        setShowGoogleHint(true);
+      }
     } else {
       navigate("/app", { replace: true });
     }
@@ -70,8 +76,9 @@ export default function Login() {
   return (
     <AuthShell>
       <AuthHeader
-        title="Welcome back"
-        subtitle="Sign in to keep generating LinkedIn posts."
+        title="Welcome"
+        highlight="back"
+        subtitle="Pick up where you left off — your next post is one click away."
       />
 
       {forgotOpen ? (
@@ -80,9 +87,13 @@ export default function Login() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
+            className="btn-gradient w-full h-11"
           >
-            {loading ? "Sending..." : "Send reset link"}
+            {loading ? (
+              <><Loader2 size={16} className="mr-2 animate-spin" />Sending…</>
+            ) : (
+              "Send reset link"
+            )}
           </Button>
           <button
             type="button"
@@ -108,16 +119,33 @@ export default function Login() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
+            className="btn-gradient w-full h-11"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? (
+              <><Loader2 size={16} className="mr-2 animate-spin" />Signing in…</>
+            ) : (
+              "Sign in"
+            )}
           </Button>
+          {showGoogleHint && (
+            <p className="text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 leading-relaxed">
+              Signed up with Google? Use <span className="font-medium">Continue with Google</span> below — or use{" "}
+              <button
+                type="button"
+                onClick={() => setForgotOpen(true)}
+                className="underline underline-offset-2 hover:text-amber-200"
+              >
+                reset password
+              </button>{" "}
+              to set one.
+            </p>
+          )}
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-background px-2 text-muted-foreground">or</span>
+              <span className="bg-card px-2 text-muted-foreground">or</span>
             </div>
           </div>
           <Button
@@ -125,7 +153,7 @@ export default function Login() {
             onClick={signInWithGoogle}
             disabled={loading}
             variant="outline"
-            className="w-full h-11 rounded-full font-medium"
+            className="w-full h-11 rounded-full font-medium hover:-translate-y-0.5 transition-transform"
           >
             <GoogleIcon /> Continue with Google
           </Button>
