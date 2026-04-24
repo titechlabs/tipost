@@ -1,6 +1,7 @@
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { LogOut, KeyRound } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { ChangePasswordDialog } from "@/components/app/ChangePasswordDialog";
@@ -51,6 +52,24 @@ export function TopBar({
           <span className="hidden sm:inline-flex text-xs text-muted-foreground border border-border rounded-full px-3 py-1">
             {used}/{limit} posts today
           </span>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="hidden sm:inline-flex h-9 rounded-full border-border bg-transparent"
+          >
+            <Link to="/pricing">Upgrade</Link>
+          </Button>
+          <Button
+            onClick={() => supabase.auth.signOut()}
+            variant="ghost"
+            size="icon"
+            className="hidden sm:inline-flex h-9 w-9 rounded-full"
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            <LogOut size={16} />
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-9 h-9 rounded-full overflow-hidden border border-border bg-secondary flex items-center justify-center text-sm font-medium">

@@ -44,7 +44,7 @@ export function Pricing() {
           ]}
           cta={
             <Button asChild variant="outline" className="w-full h-11 rounded-full border-border bg-transparent">
-              <Link to="/app">Get Started Free</Link>
+              <Link to="/signup">Get Started Free</Link>
             </Button>
           }
         />

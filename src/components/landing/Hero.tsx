@@ -25,7 +25,7 @@ export function Hero() {
         style={{ animationDelay: "180ms" }}
       >
         <Button asChild className="btn-gradient h-12 px-7 text-base">
-          <Link to="/app">Start Free — No Card Needed →</Link>
+          <Link to="/signup">Start Free — No Card Needed →</Link>
         </Button>
         <Button
           asChild

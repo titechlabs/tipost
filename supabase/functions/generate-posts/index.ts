@@ -49,14 +49,43 @@ Deno.serve(async (req: Request) => {
     const webhookUrl =
       setting?.value || "https://n8n.titechlabs.dev/webhook/post-generator";
 
-    // Consume quota atomically (uses caller context via the user client)
-    const { data: quota, error: quotaErr } = await userClient.rpc(
-      "consume_daily_quota",
-      { _amount: posts },
-    );
-    if (quotaErr) return json({ error: quotaErr.message }, 400);
-    if (!(quota as any)?.ok) {
-      return json({ error: (quota as any)?.error ?? "Quota error", quota }, 429);
+    // Decide quota source: paid users (with code_id) use daily quota;
+    // free trial users use post_credits.
+    const { data: profile } = await admin
+      .from("users")
+      .select("code_id, plan, post_credits")
+      .eq("id", userId)
+      .maybeSingle();
+
+    let quota: any = null;
+    if (profile?.code_id) {
+      const { data, error: quotaErr } = await userClient.rpc(
+        "consume_daily_quota",
+        { _amount: posts },
+      );
+      if (quotaErr) return json({ error: quotaErr.message }, 400);
+      if (!(data as any)?.ok) {
+        return json({ error: (data as any)?.error ?? "Quota error", quota: data }, 429);
+      }
+      quota = data;
+    } else {
+      // Free trial — use credits
+      const { data, error: creditErr } = await userClient.rpc(
+        "consume_post_credit",
+        { _amount: posts },
+      );
+      if (creditErr) return json({ error: creditErr.message }, 400);
+      if (!(data as any)?.ok) {
+        return json(
+          {
+            error: (data as any)?.error ?? "No credits left",
+            upgrade: true,
+            credits: (data as any)?.credits ?? 0,
+          },
+          402,
+        );
+      }
+      quota = data;
     }
 
     // Call n8n

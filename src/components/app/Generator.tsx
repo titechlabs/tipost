@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Minus, Plus, Sparkles } from "lucide-react";
+import { Minus, Plus, Sparkles, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LoadingState } from "./LoadingState";
@@ -14,11 +15,13 @@ export function Generator({
   maxPerRun,
   onGenerated,
   presetTopic,
+  outOfCredits = false,
 }: {
   userId: string;
   maxPerRun: number;
   onGenerated: () => void;
   presetTopic?: string;
+  outOfCredits?: boolean;
 }) {
   const [topic, setTopic] = useState(presetTopic ?? "");
   const [count, setCount] = useState(1);
@@ -45,7 +48,21 @@ export function Generator({
         body: { topic: topic.trim(), posts: count },
       });
       if (error) {
-        toast.error(error.message || "Generation failed");
+        // Edge function returns 402 with upgrade flag when credits exhausted
+        const ctx = (error as unknown as { context?: { body?: string } })?.context;
+        let upgrade = false;
+        try {
+          const parsed = ctx?.body ? JSON.parse(ctx.body) : null;
+          upgrade = !!parsed?.upgrade;
+          if (parsed?.error) toast.error(parsed.error);
+          else toast.error(error.message || "Generation failed");
+        } catch {
+          toast.error(error.message || "Generation failed");
+        }
+        if (upgrade) {
+          // Surface upgrade banner state implicitly by parent prop on next reload;
+          // user can click the visible upgrade CTA above.
+        }
         return;
       }
       const payload = (data as { ok: boolean; data: unknown; error?: string }) ?? null;
@@ -78,6 +95,20 @@ export function Generator({
 
   return (
     <section className="space-y-6">
+      {outOfCredits && (
+        <div className="ti-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 fade-up border-amber-500/30 bg-amber-500/5">
+          <Lock size={20} className="text-amber-400 shrink-0" />
+          <div className="flex-1">
+            <h3 className="font-display text-lg">You've used your free post</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Upgrade to a paid plan to keep generating LinkedIn posts.
+            </p>
+          </div>
+          <Button asChild className="btn-gradient h-11 px-5 shrink-0">
+            <Link to="/pricing">Upgrade to continue</Link>
+          </Button>
+        </div>
+      )}
       <div className="ti-card ti-card-glow p-6 sm:p-8 fade-up">
         <h2 className="font-display text-2xl sm:text-3xl">Generate LinkedIn Posts</h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -116,7 +147,7 @@ export function Generator({
             </div>
             <Button
               onClick={generate}
-              disabled={loading || !topic.trim()}
+              disabled={loading || !topic.trim() || outOfCredits}
               className="btn-gradient h-12 px-7 flex-1 sm:flex-none"
             >
               <Sparkles size={16} className="mr-2" />

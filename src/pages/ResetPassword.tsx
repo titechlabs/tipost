@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { Logo } from "@/components/Logo";
-import { CenteredCard } from "@/components/app/LoginGate";
 import { toast } from "sonner";
 
 export default function ResetPassword() {
@@ -51,7 +51,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <CenteredCard>
+    <AuthShell>
       <div className="text-center">
         <Logo size="lg" />
         <h1 className="font-display text-2xl mt-6">Set a new password</h1>
@@ -92,6 +92,6 @@ export default function ResetPassword() {
           </Button>
         </form>
       )}
-    </CenteredCard>
+    </AuthShell>
   );
 }

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { supabase } from "@/integrations/supabase/client";
-import { LoginGate } from "@/components/app/LoginGate";
-import { AccessCodeGate } from "@/components/app/AccessCodeGate";
 import { TopBar } from "@/components/app/TopBar";
 import { AnnouncementBanner } from "@/components/app/AnnouncementBanner";
 import { Generator } from "@/components/app/Generator";
@@ -16,16 +14,14 @@ type AccessInfo = {
   plan: Plan;
   used: number;
   limit: number;
-  codeId: string;
+  codeId: string | null;
+  credits: number;
 };
 
 export default function AppPage() {
   const { session, loading } = useAuthSession();
-  const [params] = useSearchParams();
-  const refParam = params.get("ref") ?? "";
 
   const [profileLoading, setProfileLoading] = useState(false);
-  const [hasCode, setHasCode] = useState<boolean | null>(null);
   const [info, setInfo] = useState<AccessInfo | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [presetTopic, setPresetTopic] = useState<string | undefined>();
@@ -39,12 +35,19 @@ export default function AppPage() {
     setProfileLoading(true);
     const { data: u } = await supabase
       .from("users")
-      .select("code_id,plan")
+      .select("code_id,plan,post_credits")
       .eq("id", session.user.id)
       .maybeSingle();
     if (!u?.code_id) {
-      setHasCode(false);
-      setInfo(null);
+      // Free trial: use post_credits
+      const credits = u?.post_credits ?? 0;
+      setInfo({
+        plan: "free",
+        used: Math.max(0, 1 - credits),
+        limit: 1,
+        codeId: null,
+        credits,
+      });
       setProfileLoading(false);
       return;
     }
@@ -55,12 +58,12 @@ export default function AppPage() {
       .select("daily_used,daily_limit,plan")
       .eq("id", u.code_id)
       .maybeSingle();
-    setHasCode(true);
     setInfo({
       plan: (u.plan ?? c?.plan ?? "free") as Plan,
       used: c?.daily_used ?? 0,
       limit: c?.daily_limit ?? 2,
       codeId: u.code_id,
+      credits: u.post_credits ?? 0,
     });
     setProfileLoading(false);
   };
@@ -70,7 +73,7 @@ export default function AppPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, refreshKey]);
 
-  if (loading || (session && profileLoading && hasCode === null)) {
+  if (loading || (session && profileLoading && !info)) {
     return (
       <div className="min-h-screen grid place-items-center text-muted-foreground text-sm">
         Loading...
@@ -78,20 +81,12 @@ export default function AppPage() {
     );
   }
 
-  if (!session) return <LoginGate variant="user" />;
-
-  if (hasCode === false) {
-    return (
-      <AccessCodeGate
-        initialRef={refParam}
-        onUnlocked={() => setRefreshKey((k) => k + 1)}
-      />
-    );
-  }
+  if (!session) return <Navigate to="/login" replace />;
 
   if (!info) return null;
 
   const maxPerRun = info.plan === "pro" ? 10 : info.plan === "starter" ? 5 : 1;
+  const outOfCredits = !info.codeId && info.credits <= 0;
   const email = session.user.email ?? "";
   const avatar = (session.user.user_metadata as Record<string, unknown>)?.avatar_url as string | undefined;
 
@@ -110,6 +105,7 @@ export default function AppPage() {
           key={presetTopic ?? "default"}
           userId={session.user.id}
           maxPerRun={maxPerRun}
+          outOfCredits={outOfCredits}
           presetTopic={presetTopic}
           onGenerated={() => setRefreshKey((k) => k + 1)}
         />

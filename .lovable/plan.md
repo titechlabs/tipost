@@ -1,83 +1,185 @@
 ## Goal
 
-- `/admin` login page → Google sign-in (admins only) **plus** email + password
-- `/app` login page → email + password only (with "Forgot password" link)
-- All users can change their password while signed in
-- "Back to home" link on every login page
+Move TiPost from a "code-first" flow to a standard SaaS flow:
+
+```text
+Landing → /login or /signup → /app (1 free post) → /pricing → upgrade
+```
+
+- Dedicated `/login` and `/signup` routes (no more in-app login gate)
+- `/app` requires auth, redirects to `/login` if not authenticated
+- New users get **1 free post credit** automatically
+- Quota system uses `post_credits` for the Free plan (paid plans keep their daily limits)
+- New `/pricing` page (separate from the landing section)
+- `/admin` = login only (no signup); Google + Email/Password; admin role required
+- Access-code redemption is moved out of the default flow into `/pricing` as an optional "I have a code" panel
 
 ---
 
-## 1. Two distinct login screens
+## 1. Routing changes (`src/App.tsx`)
 
-Refactor `src/components/app/LoginGate.tsx` into a flexible component that accepts a `variant` prop:
+Add new public routes:
+- `/login` → `Login.tsx` (sign-in form)
+- `/signup` → `Signup.tsx` (sign-up form with name)
+- `/pricing` → `Pricing.tsx` (full standalone page)
+- `/admin/login` → `AdminLogin.tsx` (Google + email/password, no signup tab)
 
-- `variant="user"` (used on `/app`)
-  - Tabs: **Sign in** / **Sign up**
-  - Email + password fields
-  - "Forgot password?" link → opens reset flow
-  - "← Back to home" link at the bottom
-- `variant="admin"` (used on `/admin`)
-  - Tabs: **Sign in** / **Sign up**
-  - Email + password fields (same as user)
-  - **"Continue with Google"** button on top, with divider "or continue with email"
-  - Uses `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/admin" })`
-  - "← Back to home" link at the bottom
-  - After sign-in, if the account is **not** an admin → show a friendly error ("This account isn't an admin") and sign them out
-  - Note: anyone can attempt Google sign-in, but only admins can actually access `/admin` (already enforced by `useIsAdmin` redirecting non-admins to `/`). The Google button is *shown* on `/admin` only; non-admin users on `/app` will not see it.
-
-`src/pages/admin/AdminLayout.tsx` will pass `variant="admin"`; `src/pages/AppPage.tsx` will pass `variant="user"`.
+Keep: `/`, `/app`, `/reset-password`, `/admin/*`, `*`
 
 ---
 
-## 2. Forgot password flow
+## 2. Landing button fixes
 
-- "Forgot password?" link in the user login tab opens a small inline form (email field + "Send reset link" button)
-- Calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" })`
-- New page **`/reset-password`** (`src/pages/ResetPassword.tsx`)
-  - Public route added in `src/App.tsx`
-  - Detects the recovery token in the URL hash (Supabase auto-applies it via `onAuthStateChange` → `PASSWORD_RECOVERY` event)
-  - Shows a "New password" + "Confirm password" form
-  - Calls `supabase.auth.updateUser({ password })`
-  - On success → toast + redirect to `/app`
+- `src/components/landing/Hero.tsx` — both CTA buttons (`Start Free`, `See how it works` stays as anchor) → `Start Free` now links to `/signup`
+- `src/components/landing/Navbar.tsx` — `Try Free →` button → navigates to `/signup`; add a secondary `Sign in` link → `/login`
+- `src/components/landing/Pricing.tsx` (landing section) — `Get Started Free` button → `/signup`; "Get Access via WhatsApp" buttons remain
+- Footer / any other `/app` link audited and pointed to `/signup` where it represents a CTA
 
 ---
 
-## 3. Change password (signed-in users & admins)
+## 3. New auth pages
 
-New reusable component **`src/components/app/ChangePasswordDialog.tsx`**:
+**`src/pages/Login.tsx`**
+- Email + password form
+- Helper text: "New here? Create an account"
+- Links: `Forgot password?`, `Create account` → `/signup`, `← Back to home`
+- On success → redirect to `/app`
+- If already signed in → auto redirect to `/app`
 
-- Triggered from a menu item
-- Fields: Current password, New password, Confirm new password
-- Re-authenticates by calling `signInWithPassword` with the current password, then `supabase.auth.updateUser({ password: newPassword })`
-- Min 6 chars, both new fields must match
+**`src/pages/Signup.tsx`**
+- Fields: **Name**, Email, Password (min 6)
+- Calls `supabase.auth.signUp` with `options.data: { full_name }` and `emailRedirectTo: window.location.origin + "/app"`
+- After signup → toast + redirect to `/app`
+- Links: `Already have an account? Sign in` → `/login`, `← Back to home`
 
-Wired in two places:
-- **User app**: add "Change password" item in the existing avatar dropdown in `src/components/app/TopBar.tsx` (above "Sign out")
-- **Admin console**: add a small user menu in the `AdminLayout` header (currently only has the sidebar trigger + title) with "Change password" and "Sign out"
+**`src/pages/AdminLogin.tsx`**
+- Sign-in only (no signup tab)
+- Top: `Continue with Google` button (uses existing `lovable.auth.signInWithOAuth`)
+- Below: Email + password form + `Forgot password?`
+- After auth → redirect to `/admin`; if not admin, show error and sign out (existing `useIsAdmin` already redirects non-admins, but we also surface a friendly toast)
+- Link: `← Back to home`
 
-Note: Google-only accounts have no password. If `updateUser` returns an error indicating no password set, the dialog will show: "This account uses Google sign-in and has no password to change."
+The current `LoginGate.tsx` component is **deleted** (its logic is split into the three pages above; shared `CenteredCard` + `Field` extracted to a small `src/components/auth/AuthShell.tsx`).
 
 ---
 
-## 4. "Back to home" link
+## 4. Route guards
 
-Added to the bottom of `LoginGate` (both variants) as a subtle text link → navigates to `/`.
+**`src/pages/AppPage.tsx`**
+- Replace inline `<LoginGate />` with `<Navigate to="/login" replace state={{ from: "/app" }} />` when no session.
+- Remove the `AccessCodeGate` flow from the default path. Free users without a code automatically get a synthetic "free" access entry (see §5) so the app loads immediately.
+
+**`src/pages/admin/AdminLayout.tsx`**
+- Replace inline `<LoginGate variant="admin" />` with `<Navigate to="/admin/login" replace />` when no session.
+- Keep existing `useIsAdmin` non-admin → redirect to `/`.
 
 ---
 
-## Files
+## 5. Free trial credits (database)
+
+Add a per-user credit balance for the Free plan. Keep the existing `access_codes` daily-quota system intact for paid plans.
+
+**Migration:**
+```sql
+ALTER TABLE public.users
+  ADD COLUMN post_credits integer NOT NULL DEFAULT 1,
+  ADD COLUMN full_name text;
+
+-- Update handle_new_user trigger to default plan='free' and post_credits=1
+CREATE OR REPLACE FUNCTION public.handle_new_user() ...
+  INSERT INTO public.users (id, email, full_name, referral_code, plan, post_credits)
+  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name', new_ref, 'free', 1);
+
+-- New RPC for free-tier credit consumption
+CREATE OR REPLACE FUNCTION public.consume_post_credit(_amount integer)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE _uid uuid := auth.uid(); _credits int;
+BEGIN
+  IF _uid IS NULL THEN RETURN jsonb_build_object('ok', false, 'error', 'Not authenticated'); END IF;
+  SELECT post_credits INTO _credits FROM public.users WHERE id = _uid FOR UPDATE;
+  IF _credits IS NULL OR _credits < _amount THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'No credits left', 'credits', COALESCE(_credits,0));
+  END IF;
+  UPDATE public.users SET post_credits = post_credits - _amount WHERE id = _uid;
+  RETURN jsonb_build_object('ok', true, 'credits', _credits - _amount);
+END $$;
+```
+
+Backfill: existing users without `post_credits` default to 1.
+
+**Edge function `generate-posts`:**
+- Read user's `plan` and `code_id` first.
+- If `code_id IS NOT NULL` → use existing `consume_daily_quota` (paid behavior unchanged).
+- Else (free trial) → call `consume_post_credit(_amount)`. If `ok: false` → return `402` with `{ error: "Upgrade to continue", upgrade: true }`.
+
+---
+
+## 6. App page UX (`src/pages/AppPage.tsx`)
+
+- Remove `AccessCodeGate` import & branch.
+- Always render the app once signed in.
+- Compute display values:
+  - If user has `code_id` → existing plan/used/limit logic.
+  - Else (free trial) → `plan: "free"`, `used: 1 - post_credits`, `limit: 1`, `maxPerRun: 1`.
+- Pass `post_credits` to `Generator`. When `post_credits === 0` and no `code_id`, show an "Upgrade to continue" banner with a button → `/pricing` instead of (or above) the generate button.
+- `Generator.tsx` — handle `402` / `upgrade: true` from the edge function: show toast + inline upgrade CTA linking to `/pricing`.
+
+---
+
+## 7. New `/pricing` page (`src/pages/Pricing.tsx`)
+
+A full page (Navbar + content + Footer) that:
+- Reuses the landing `Pricing` section component (already shows Free / Starter / Pro)
+- Adds a small collapsible **"Have an access code?"** panel at the bottom that mounts `AccessCodeGate` (refactored to be embeddable; on success → toast + navigate to `/app`).
+- Page title: "Pricing — TiPost"
+
+---
+
+## 8. Logout + UI polish
+
+- `TopBar.tsx` already has Sign out in the dropdown — add an explicit visible logout icon button next to the avatar on desktop for clarity. Mobile keeps it inside the dropdown.
+- `Navbar.tsx` (landing) — add `Sign in` text link before `Try Free →` button.
+- Login/Signup pages: minimal centered card (reuse `AuthShell`), helper text under the title (e.g. "Generate LinkedIn posts in under 60 seconds — start free, no card needed.")
+
+---
+
+## 9. Files
 
 **New**
-- `src/pages/ResetPassword.tsx` — recovery page
-- `src/components/app/ChangePasswordDialog.tsx` — reusable dialog
+- `src/pages/Login.tsx`
+- `src/pages/Signup.tsx`
+- `src/pages/AdminLogin.tsx`
+- `src/pages/Pricing.tsx`
+- `src/components/auth/AuthShell.tsx` (shared `CenteredCard` + `Field`)
 
 **Edited**
-- `src/components/app/LoginGate.tsx` — add `variant` prop, Google button (admin only), forgot-password link, back-to-home link
-- `src/App.tsx` — add `/reset-password` route
-- `src/pages/admin/AdminLayout.tsx` — pass `variant="admin"` to LoginGate; add user menu in header with Change password + Sign out
-- `src/pages/AppPage.tsx` — pass `variant="user"` to LoginGate
-- `src/components/app/TopBar.tsx` — add "Change password" dropdown item
+- `src/App.tsx` — add `/login`, `/signup`, `/pricing`, `/admin/login` routes
+- `src/components/landing/Hero.tsx` — CTA → `/signup`
+- `src/components/landing/Navbar.tsx` — `Try Free` → `/signup`, add `Sign in` link
+- `src/components/landing/Pricing.tsx` — Free CTA → `/signup`
+- `src/components/landing/Footer.tsx` — audit links
+- `src/pages/AppPage.tsx` — redirect to `/login`, remove access-code gate, free-credit logic
+- `src/pages/admin/AdminLayout.tsx` — redirect to `/admin/login`
+- `src/components/app/Generator.tsx` — handle `upgrade` response, show CTA to `/pricing`
+- `src/components/app/TopBar.tsx` — visible logout button
+- `src/components/app/AccessCodeGate.tsx` — make embeddable (accept `compact` prop, drop `CenteredCard` wrapper)
+- `supabase/functions/generate-posts/index.ts` — branch on `code_id` for credit vs quota
 
-No database or edge-function changes needed. Google OAuth is already wired via `src/integrations/lovable/index.ts`.
+**Deleted**
+- `src/components/app/LoginGate.tsx` (replaced by dedicated pages)
+
+**Database migration**
+- `users.post_credits` (default 1) + `users.full_name`
+- Updated `handle_new_user` trigger (sets plan=free, credits=1, full_name from metadata)
+- New `consume_post_credit` RPC
+- Note: the `handle_new_user` trigger already exists as a function — verify it's wired to `auth.users` insert; if not, the migration adds the trigger.
+
+---
+
+## Final flows
+
+**User:** Landing → `/signup` → `/app` (1 free post) → generate → credits hit 0 → "Upgrade" CTA → `/pricing` → WhatsApp → admin issues code → user redeems via `/pricing` "Have a code?" panel → paid plan active.
+
+**Admin:** Landing → `/admin` → not signed in → `/admin/login` → Google or email/password → admin role check → `/admin` console.
 
 Approve and I'll implement.

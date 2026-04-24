@@ -43,8 +43,14 @@ export function Navbar() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/login")}
+            className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground px-3 h-10 items-center"
+          >
+            Sign in
+          </button>
           <Button
-            onClick={() => navigate("/app")}
+            onClick={() => navigate("/signup")}
             className="btn-gradient h-10 px-5 text-sm hidden sm:inline-flex"
           >
             Try Free →
@@ -72,11 +78,17 @@ export function Navbar() {
               </a>
             ))}
             <Button
-              onClick={() => navigate("/app")}
+              onClick={() => navigate("/signup")}
               className="btn-gradient h-10 mt-2"
             >
               Try Free →
             </Button>
+            <button
+              onClick={() => navigate("/login")}
+              className="text-sm text-muted-foreground hover:text-foreground text-left mt-1"
+            >
+              Sign in
+            </button>
           </div>
         </div>
       )}

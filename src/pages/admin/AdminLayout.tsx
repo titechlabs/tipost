@@ -2,7 +2,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Outlet, Navigate } from "react-router-dom";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { LoginGate } from "@/components/app/LoginGate";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -26,7 +25,7 @@ export default function AdminLayout() {
       </div>
     );
   }
-  if (!session) return <LoginGate variant="admin" />;
+  if (!session) return <Navigate to="/admin/login" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
 
   const email = session.user.email ?? "";

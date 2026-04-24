@@ -12,9 +12,10 @@ export function Footer() {
         </div>
         <div className="flex flex-wrap gap-6 md:justify-end text-sm">
           <a href="#features" className="text-muted-foreground hover:text-foreground">Features</a>
-          <a href="#pricing" className="text-muted-foreground hover:text-foreground">Pricing</a>
+          <a href="/pricing" className="text-muted-foreground hover:text-foreground">Pricing</a>
           <a href="#faq" className="text-muted-foreground hover:text-foreground">FAQ</a>
-          <a href="/app" className="text-muted-foreground hover:text-foreground">App</a>
+          <a href="/login" className="text-muted-foreground hover:text-foreground">Sign in</a>
+          <a href="/signup" className="text-muted-foreground hover:text-foreground">Try Free</a>
         </div>
       </div>
       <div className="border-t border-border">
