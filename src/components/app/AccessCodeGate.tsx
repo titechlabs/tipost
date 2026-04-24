@@ -2,16 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
-import { CenteredCard } from "./LoginGate";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function AccessCodeGate({
   initialRef = "",
   onUnlocked,
+  embedded = false,
 }: {
   initialRef?: string;
   onUnlocked: () => void;
+  embedded?: boolean;
 }) {
   const [code, setCode] = useState("");
   const [ref, setRef] = useState(initialRef);
@@ -38,9 +39,9 @@ export function AccessCodeGate({
     onUnlocked();
   };
 
-  return (
-    <CenteredCard>
-      <div className={shake ? "shake" : ""}>
+  const inner = (
+    <div className={shake ? "shake" : ""}>
+      {!embedded && (
         <div className="text-center">
           <Logo size="lg" />
           <h1 className="font-display text-2xl mt-6">Enter Your Access Code</h1>
@@ -48,6 +49,7 @@ export function AccessCodeGate({
             Purchase a plan and receive your code via WhatsApp.
           </p>
         </div>
+      )}
         <form onSubmit={submit} className="mt-7 space-y-4">
           <Input
             value={code}
@@ -78,7 +80,14 @@ export function AccessCodeGate({
         >
           Get a code via WhatsApp →
         </a>
-      </div>
-    </CenteredCard>
+    </div>
+  );
+
+  if (embedded) return inner;
+
+  return (
+    <div className="min-h-screen grid place-items-center px-4 py-12">
+      <div className="ti-card ti-card-glow p-8 w-full max-w-md fade-up">{inner}</div>
+    </div>
   );
 }
