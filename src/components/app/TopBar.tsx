@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, KeyRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChangePasswordDialog } from "@/components/app/ChangePasswordDialog";
 import {
   DropdownMenu,
@@ -29,6 +29,20 @@ export function TopBar({
   avatarUrl?: string | null;
 }) {
   const [pwOpen, setPwOpen] = useState(false);
+  const [hasPassword, setHasPassword] = useState<boolean>(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const identities = data.user?.identities ?? [];
+      setHasPassword(identities.some((i) => i.provider === "email"));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const planColor: Record<Plan, string> = {
     free: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     starter: "bg-sky-500/15 text-sky-300 border-sky-500/30",
@@ -84,7 +98,8 @@ export function TopBar({
               <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">{email}</div>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setPwOpen(true)}>
-                <KeyRound size={14} className="mr-2" /> Change password
+                <KeyRound size={14} className="mr-2" />
+                {hasPassword ? "Change password" : "Set password"}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
                 <LogOut size={14} className="mr-2" /> Sign out

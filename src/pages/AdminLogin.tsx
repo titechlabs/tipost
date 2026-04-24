@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { AuthShell, AuthHeader, AuthField, BackToHome, GoogleIcon } from "@/components/auth/AuthShell";
+import { Loader2 } from "lucide-react";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -76,8 +77,12 @@ export default function AdminLogin() {
   };
 
   return (
-    <AuthShell>
-      <AuthHeader title="Admin Console" subtitle="Sign in to manage TiPost." />
+    <AuthShell side="admin">
+      <AuthHeader
+        title="Admin"
+        highlight="console"
+        subtitle="Sign in to manage TiPost — users, codes, revenue."
+      />
 
       <div className="mt-8 space-y-4">
         <Button
@@ -85,7 +90,7 @@ export default function AdminLogin() {
           onClick={signInGoogle}
           disabled={loading}
           variant="outline"
-          className="w-full h-11 rounded-full font-medium"
+          className="w-full h-11 rounded-full font-medium hover:-translate-y-0.5 transition-transform"
         >
           <GoogleIcon /> Continue with Google
         </Button>
@@ -102,9 +107,13 @@ export default function AdminLogin() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
+            className="btn-gradient w-full h-11"
           >
-            {loading ? "Sending..." : "Send reset link"}
+            {loading ? (
+              <><Loader2 size={16} className="mr-2 animate-spin" />Sending…</>
+            ) : (
+              "Send reset link"
+            )}
           </Button>
           <button
             type="button"
@@ -130,9 +139,13 @@ export default function AdminLogin() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
+            className="btn-gradient w-full h-11"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? (
+              <><Loader2 size={16} className="mr-2 animate-spin" />Signing in…</>
+            ) : (
+              "Sign in"
+            )}
           </Button>
         </form>
       )}

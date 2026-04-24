@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { AuthShell, AuthHeader, AuthField, BackToHome, GoogleIcon } from "@/components/auth/AuthShell";
+import { Loader2 } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -72,8 +73,10 @@ export default function Signup() {
   return (
     <AuthShell>
       <AuthHeader
-        title="Create your account"
-        subtitle="Start free — generate your first LinkedIn post in 60 seconds."
+        pill="1 free post included"
+        title="Create your"
+        highlight="account"
+        subtitle="Join writers shipping LinkedIn posts that actually get read."
       />
 
       <form onSubmit={signUp} className="space-y-4 mt-8">
@@ -83,16 +86,20 @@ export default function Signup() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-11 bg-white text-black hover:bg-white/90 rounded-full font-medium"
+          className="btn-gradient w-full h-11"
         >
-          {loading ? "Creating account..." : "Create account"}
+          {loading ? (
+            <><Loader2 size={16} className="mr-2 animate-spin" />Creating account…</>
+          ) : (
+            "Create my free account"
+          )}
         </Button>
         <div className="relative my-2">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-background px-2 text-muted-foreground">or</span>
+            <span className="bg-card px-2 text-muted-foreground">or</span>
           </div>
         </div>
         <Button
@@ -100,7 +107,7 @@ export default function Signup() {
           onClick={signUpWithGoogle}
           disabled={loading}
           variant="outline"
-          className="w-full h-11 rounded-full font-medium"
+          className="w-full h-11 rounded-full font-medium hover:-translate-y-0.5 transition-transform"
         >
           <GoogleIcon /> Continue with Google
         </Button>
