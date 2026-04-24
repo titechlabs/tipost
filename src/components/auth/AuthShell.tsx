@@ -172,7 +172,12 @@ export function AuthField({
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+      <Label
+        htmlFor={id}
+        className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+      >
+        {label}
+      </Label>
       <Input
         id={id}
         type={type}
@@ -181,6 +186,7 @@ export function AuthField({
         required
         autoComplete={autoComplete ?? (type === "password" ? "current-password" : "email")}
         placeholder={placeholder}
+        className="h-11 rounded-xl bg-background/40 border-border focus-visible:ring-accent"
       />
     </div>
   );
