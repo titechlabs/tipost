@@ -1,6 +1,5 @@
-import { createClient, corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.104.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.104.1";
 
-// CORS fallback for older clients
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
