@@ -1,185 +1,89 @@
 ## Goal
 
-Move TiPost from a "code-first" flow to a standard SaaS flow:
-
-```text
-Landing → /login or /signup → /app (1 free post) → /pricing → upgrade
-```
-
-- Dedicated `/login` and `/signup` routes (no more in-app login gate)
-- `/app` requires auth, redirects to `/login` if not authenticated
-- New users get **1 free post credit** automatically
-- Quota system uses `post_credits` for the Free plan (paid plans keep their daily limits)
-- New `/pricing` page (separate from the landing section)
-- `/admin` = login only (no signup); Google + Email/Password; admin role required
-- Access-code redemption is moved out of the default flow into `/pricing` as an optional "I have a code" panel
+Fix two things:
+1. **Google-signed-up users can't use email/password login or change password** — because they never set a password. Add a way for them to set one.
+2. **Auth pages (Login / Signup / Reset / Change Password) look plain** — give them a more eye-catching, branded look while staying minimal.
 
 ---
 
-## 1. Routing changes (`src/App.tsx`)
+## 1. Password handling for Google users
 
-Add new public routes:
-- `/login` → `Login.tsx` (sign-in form)
-- `/signup` → `Signup.tsx` (sign-up form with name)
-- `/pricing` → `Pricing.tsx` (full standalone page)
-- `/admin/login` → `AdminLogin.tsx` (Google + email/password, no signup tab)
+### Problem
+- A user who signs up with Google has no password in their account.
+- If they later try to "Sign in with email + password" → fails (they never set one).
+- If they open "Change password" → the dialog requires the **current** password, which they don't have → blocked.
+- "Forgot password?" technically works, but it's not obvious to a Google user that this is the path to *set* a password for the first time.
 
-Keep: `/`, `/app`, `/reset-password`, `/admin/*`, `*`
+### Fix
 
----
+**A. Smart Change Password dialog** (`src/components/app/ChangePasswordDialog.tsx`)
+- Detect if the signed-in user has a password by inspecting the session user's `identities` (look for an `email` identity vs only a `google` identity).
+- Two modes inside the same dialog:
+  - **Set password mode** (Google-only users): only show "New password" + "Confirm new password" fields. Calls `supabase.auth.updateUser({ password })` directly (no current-password re-auth needed — the user already has an active session). Title: "Set a password". Helper text explains: "Your account uses Google sign-in. Set a password to also sign in with email."
+  - **Change password mode** (users with an existing password): keep the current 3-field flow (current + new + confirm) with re-auth via `signInWithPassword`.
+- After success, show a toast: "Password set — you can now sign in with email and password."
 
-## 2. Landing button fixes
+**B. Topbar dropdown label** (`src/components/app/TopBar.tsx`)
+- Show "Set password" instead of "Change password" when the user has no email/password identity. Same menu item, dynamic label.
 
-- `src/components/landing/Hero.tsx` — both CTA buttons (`Start Free`, `See how it works` stays as anchor) → `Start Free` now links to `/signup`
-- `src/components/landing/Navbar.tsx` — `Try Free →` button → navigates to `/signup`; add a secondary `Sign in` link → `/login`
-- `src/components/landing/Pricing.tsx` (landing section) — `Get Started Free` button → `/signup`; "Get Access via WhatsApp" buttons remain
-- Footer / any other `/app` link audited and pointed to `/signup` where it represents a CTA
+**C. Login page hint** (`src/pages/Login.tsx`)
+- Under the "Forgot password?" link, when a sign-in attempt fails with "Invalid login credentials", show a small inline hint: "Signed up with Google? Use 'Continue with Google' below, or reset your password to set one."
 
----
-
-## 3. New auth pages
-
-**`src/pages/Login.tsx`**
-- Email + password form
-- Helper text: "New here? Create an account"
-- Links: `Forgot password?`, `Create account` → `/signup`, `← Back to home`
-- On success → redirect to `/app`
-- If already signed in → auto redirect to `/app`
-
-**`src/pages/Signup.tsx`**
-- Fields: **Name**, Email, Password (min 6)
-- Calls `supabase.auth.signUp` with `options.data: { full_name }` and `emailRedirectTo: window.location.origin + "/app"`
-- After signup → toast + redirect to `/app`
-- Links: `Already have an account? Sign in` → `/login`, `← Back to home`
-
-**`src/pages/AdminLogin.tsx`**
-- Sign-in only (no signup tab)
-- Top: `Continue with Google` button (uses existing `lovable.auth.signInWithOAuth`)
-- Below: Email + password form + `Forgot password?`
-- After auth → redirect to `/admin`; if not admin, show error and sign out (existing `useIsAdmin` already redirects non-admins, but we also surface a friendly toast)
-- Link: `← Back to home`
-
-The current `LoginGate.tsx` component is **deleted** (its logic is split into the three pages above; shared `CenteredCard` + `Field` extracted to a small `src/components/auth/AuthShell.tsx`).
+No DB changes needed — Supabase already supports `updateUser({ password })` for an authenticated session, including OAuth-only users.
 
 ---
 
-## 4. Route guards
+## 2. Visual refresh for auth pages
 
-**`src/pages/AppPage.tsx`**
-- Replace inline `<LoginGate />` with `<Navigate to="/login" replace state={{ from: "/app" }} />` when no session.
-- Remove the `AccessCodeGate` flow from the default path. Free users without a code automatically get a synthetic "free" access entry (see §5) so the app loads immediately.
+Goal: make Login / Signup / Reset Password / AdminLogin feel premium and on-brand (matches the existing dark theme with `--accent` purple `#6c63ff` and `--accent-2` teal `#00d4aa` already defined in `src/index.css`).
 
-**`src/pages/admin/AdminLayout.tsx`**
-- Replace inline `<LoginGate variant="admin" />` with `<Navigate to="/admin/login" replace />` when no session.
-- Keep existing `useIsAdmin` non-admin → redirect to `/`.
+### Changes to `src/components/auth/AuthShell.tsx`
+- **Two-column layout on desktop** (≥md):
+  - **Left panel (hero)**: gradient background using existing `--gradient-brand`, with a subtle radial glow + grid/dot overlay. Contains:
+    - The TiPost logo (large)
+    - A rotating tagline / value prop (static text is fine): "Generate scroll-stopping LinkedIn posts in 60 seconds."
+    - 3 small bullet features with check icons (e.g. "AI-tuned hooks", "Your voice, amplified", "1 free post to start")
+    - A small testimonial-style quote at the bottom
+  - **Right panel**: the form card (current `AuthShell` content), centered.
+- **Mobile (<md)**: single column — only the form card, with a compact gradient logo header on top so it still feels branded.
+- Card styling: keep `ti-card ti-card-glow`, add a soft outer glow ring using `--accent`.
 
----
+### Changes to `AuthHeader`
+- Bigger, bolder display title with a **gradient highlight word** using the existing `.gradient-text` class, e.g.:
+  - Login: "Welcome **back**" → "back" rendered in gradient
+  - Signup: "Create your **account**" → "account" in gradient
+- Subtitle: punchier copy
+  - Login: "Pick up where you left off — your next post is one click away."
+  - Signup: "Join writers shipping LinkedIn posts that actually get read."
+- Add a small "1 free post included" pill (using existing `.pill` class) above the title on Signup.
 
-## 5. Free trial credits (database)
+### Buttons
+- Primary submit button: switch from flat white to the existing `.btn-gradient` class so it matches the landing page CTAs (purple→violet gradient with glow).
+- Google button: keep outline style but add hover lift (`hover:-translate-y-0.5 transition-transform`).
+- Add subtle loading spinner inside buttons instead of just text swap.
 
-Add a per-user credit balance for the Free plan. Keep the existing `access_codes` daily-quota system intact for paid plans.
+### Inputs
+- Slightly taller (`h-11`), rounded-xl, soft inner shadow, focus ring uses `--accent`.
+- Floating-style labels not required — keep current `<Label>` above input but increase visual hierarchy (smaller, uppercase tracking-wider muted label).
 
-**Migration:**
-```sql
-ALTER TABLE public.users
-  ADD COLUMN post_credits integer NOT NULL DEFAULT 1,
-  ADD COLUMN full_name text;
-
--- Update handle_new_user trigger to default plan='free' and post_credits=1
-CREATE OR REPLACE FUNCTION public.handle_new_user() ...
-  INSERT INTO public.users (id, email, full_name, referral_code, plan, post_credits)
-  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name', new_ref, 'free', 1);
-
--- New RPC for free-tier credit consumption
-CREATE OR REPLACE FUNCTION public.consume_post_credit(_amount integer)
-RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE _uid uuid := auth.uid(); _credits int;
-BEGIN
-  IF _uid IS NULL THEN RETURN jsonb_build_object('ok', false, 'error', 'Not authenticated'); END IF;
-  SELECT post_credits INTO _credits FROM public.users WHERE id = _uid FOR UPDATE;
-  IF _credits IS NULL OR _credits < _amount THEN
-    RETURN jsonb_build_object('ok', false, 'error', 'No credits left', 'credits', COALESCE(_credits,0));
-  END IF;
-  UPDATE public.users SET post_credits = post_credits - _amount WHERE id = _uid;
-  RETURN jsonb_build_object('ok', true, 'credits', _credits - _amount);
-END $$;
-```
-
-Backfill: existing users without `post_credits` default to 1.
-
-**Edge function `generate-posts`:**
-- Read user's `plan` and `code_id` first.
-- If `code_id IS NOT NULL` → use existing `consume_daily_quota` (paid behavior unchanged).
-- Else (free trial) → call `consume_post_credit(_amount)`. If `ok: false` → return `402` with `{ error: "Upgrade to continue", upgrade: true }`.
+### Files touched
+- `src/components/auth/AuthShell.tsx` — new two-column layout, gradient hero panel, updated `AuthHeader`, restyled `AuthField`.
+- `src/pages/Login.tsx` — gradient submit button, updated copy, inline Google hint on failed login.
+- `src/pages/Signup.tsx` — gradient submit button, "1 free post" pill, updated copy.
+- `src/pages/ResetPassword.tsx` — match new visual style.
+- `src/pages/AdminLogin.tsx` — match new visual style (with an "Admin" badge in the hero panel).
 
 ---
 
-## 6. App page UX (`src/pages/AppPage.tsx`)
-
-- Remove `AccessCodeGate` import & branch.
-- Always render the app once signed in.
-- Compute display values:
-  - If user has `code_id` → existing plan/used/limit logic.
-  - Else (free trial) → `plan: "free"`, `used: 1 - post_credits`, `limit: 1`, `maxPerRun: 1`.
-- Pass `post_credits` to `Generator`. When `post_credits === 0` and no `code_id`, show an "Upgrade to continue" banner with a button → `/pricing` instead of (or above) the generate button.
-- `Generator.tsx` — handle `402` / `upgrade: true` from the edge function: show toast + inline upgrade CTA linking to `/pricing`.
+## Out of scope
+- No backend / DB / migration changes.
+- No new routes.
+- Email template branding (separate task).
 
 ---
 
-## 7. New `/pricing` page (`src/pages/Pricing.tsx`)
-
-A full page (Navbar + content + Footer) that:
-- Reuses the landing `Pricing` section component (already shows Free / Starter / Pro)
-- Adds a small collapsible **"Have an access code?"** panel at the bottom that mounts `AccessCodeGate` (refactored to be embeddable; on success → toast + navigate to `/app`).
-- Page title: "Pricing — TiPost"
-
----
-
-## 8. Logout + UI polish
-
-- `TopBar.tsx` already has Sign out in the dropdown — add an explicit visible logout icon button next to the avatar on desktop for clarity. Mobile keeps it inside the dropdown.
-- `Navbar.tsx` (landing) — add `Sign in` text link before `Try Free →` button.
-- Login/Signup pages: minimal centered card (reuse `AuthShell`), helper text under the title (e.g. "Generate LinkedIn posts in under 60 seconds — start free, no card needed.")
-
----
-
-## 9. Files
-
-**New**
-- `src/pages/Login.tsx`
-- `src/pages/Signup.tsx`
-- `src/pages/AdminLogin.tsx`
-- `src/pages/Pricing.tsx`
-- `src/components/auth/AuthShell.tsx` (shared `CenteredCard` + `Field`)
-
-**Edited**
-- `src/App.tsx` — add `/login`, `/signup`, `/pricing`, `/admin/login` routes
-- `src/components/landing/Hero.tsx` — CTA → `/signup`
-- `src/components/landing/Navbar.tsx` — `Try Free` → `/signup`, add `Sign in` link
-- `src/components/landing/Pricing.tsx` — Free CTA → `/signup`
-- `src/components/landing/Footer.tsx` — audit links
-- `src/pages/AppPage.tsx` — redirect to `/login`, remove access-code gate, free-credit logic
-- `src/pages/admin/AdminLayout.tsx` — redirect to `/admin/login`
-- `src/components/app/Generator.tsx` — handle `upgrade` response, show CTA to `/pricing`
-- `src/components/app/TopBar.tsx` — visible logout button
-- `src/components/app/AccessCodeGate.tsx` — make embeddable (accept `compact` prop, drop `CenteredCard` wrapper)
-- `supabase/functions/generate-posts/index.ts` — branch on `code_id` for credit vs quota
-
-**Deleted**
-- `src/components/app/LoginGate.tsx` (replaced by dedicated pages)
-
-**Database migration**
-- `users.post_credits` (default 1) + `users.full_name`
-- Updated `handle_new_user` trigger (sets plan=free, credits=1, full_name from metadata)
-- New `consume_post_credit` RPC
-- Note: the `handle_new_user` trigger already exists as a function — verify it's wired to `auth.users` insert; if not, the migration adds the trigger.
-
----
-
-## Final flows
-
-**User:** Landing → `/signup` → `/app` (1 free post) → generate → credits hit 0 → "Upgrade" CTA → `/pricing` → WhatsApp → admin issues code → user redeems via `/pricing` "Have a code?" panel → paid plan active.
-
-**Admin:** Landing → `/admin` → not signed in → `/admin/login` → Google or email/password → admin role check → `/admin` console.
-
-Approve and I'll implement.
+## Acceptance criteria
+- A user who signed up with Google can open the user menu → "Set password", set one without entering a current password, then log out and sign in with email + that password.
+- A user with an existing password still sees the 3-field "Change password" flow and re-auth still happens.
+- Login / Signup pages show a branded two-column layout on desktop, single-column on mobile, with gradient submit buttons and refined copy.
+- All existing functionality (forgot password, Google OAuth, redirects) keeps working.
