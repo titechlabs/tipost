@@ -145,5 +145,3 @@
 
 /* Make app content sit above noise */
 #root > * { position: relative; z-index: 1; }
-  }
-}
