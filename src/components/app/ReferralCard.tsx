@@ -47,9 +47,17 @@ export function ReferralCard({ userId }: { userId: string }) {
       </button>
       {open && (
         <div className="mt-4 space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Share TiPost with a friend and earn 1 month free when they subscribe to a paid plan.
-          </p>
+          <div className="text-sm space-y-1.5">
+            <p>
+              <span className="text-foreground font-medium">Earn 1 free month</span>{" "}
+              <span className="text-muted-foreground">
+                for every friend who subscribes.
+              </span>
+            </p>
+            <p className="text-muted-foreground">
+              They get <span className="text-foreground font-medium">10% off</span> their first month.
+            </p>
+          </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <input
               readOnly
@@ -60,9 +68,11 @@ export function ReferralCard({ userId }: { userId: string }) {
               <Copy size={14} className="mr-1.5" /> Copy
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
-            <span className="text-foreground font-medium">{count}</span> friends referred ·{" "}
-            <span className="text-foreground font-medium">{rewarded}</span> rewards earned
+          <p className="text-xs text-muted-foreground">
+            <span className="text-foreground font-medium">{count}</span>{" "}
+            {count === 1 ? "referral" : "referrals"} ·{" "}
+            <span className="text-foreground font-medium">{rewarded}</span>{" "}
+            {rewarded === 1 ? "reward" : "rewards"} earned
           </p>
         </div>
       )}
