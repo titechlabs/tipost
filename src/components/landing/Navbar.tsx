@@ -53,7 +53,7 @@ export function Navbar() {
             onClick={() => navigate("/signup")}
             className="btn-gradient h-10 px-5 text-sm hidden sm:inline-flex"
           >
-            Try Free →
+            Try Free — No Card Needed
           </Button>
           <button
             className="md:hidden p-2 text-foreground"
@@ -81,7 +81,7 @@ export function Navbar() {
               onClick={() => navigate("/signup")}
               className="btn-gradient h-10 mt-2"
             >
-              Try Free →
+              Try Free — No Card Needed
             </Button>
             <button
               onClick={() => navigate("/login")}
