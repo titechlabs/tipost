@@ -172,6 +172,7 @@ export function Generator({
             <PostResultCard
               key={i}
               index={i + 1}
+              total={results.length}
               text={r.text}
               imageBase64={r.image}
               delay={i * 80}
