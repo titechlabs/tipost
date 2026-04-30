@@ -66,14 +66,15 @@ export function TopBar({
           <span className="hidden sm:inline-flex text-xs text-muted-foreground border border-border rounded-full px-3 py-1">
             {used}/{limit} posts today
           </span>
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="hidden sm:inline-flex h-9 rounded-full border-border bg-transparent"
-          >
-            <Link to="/pricing">Upgrade</Link>
-          </Button>
+          {plan !== "pro" && (
+            <Button
+              asChild
+              size="sm"
+              className="hidden sm:inline-flex btn-gradient h-9 px-4 text-xs"
+            >
+              <Link to="/pricing">Upgrade</Link>
+            </Button>
+          )}
           <Button
             onClick={() => supabase.auth.signOut()}
             variant="ghost"
