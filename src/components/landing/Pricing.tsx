@@ -36,7 +36,7 @@ export function Pricing() {
           name="Free"
           price="0"
           features={[
-            { ok: true, t: "2 posts per week" },
+            { ok: true, t: "1 free post (one-time)" },
             { ok: true, t: "AI research included" },
             { ok: true, t: "1 image per post" },
             { ok: false, t: "Bulk generation" },
@@ -44,7 +44,7 @@ export function Pricing() {
           ]}
           cta={
             <Button asChild variant="outline" className="w-full h-11 rounded-full border-border bg-transparent">
-              <Link to="/signup">Get Started Free</Link>
+              <Link to="/signup">Try Free — No Card Needed</Link>
             </Button>
           }
         />

@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Check, Sparkles, Zap, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, Sparkles, Wand2, MapPin } from "lucide-react";
 
 export function AuthShell({
   children,
@@ -81,16 +81,13 @@ export function AuthShell({
         <div className="relative">
           <div className="ti-card p-4 max-w-sm">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Zap size={12} className="text-accent-2" />
-              <span>Used by 2,400+ writers</span>
+              <MapPin size={12} className="text-accent-2" />
+              <span>Built for Pakistani freelancers, founders & creators</span>
             </div>
             <p className="mt-2 text-sm leading-snug">
               {isAdmin
-                ? "“The dashboard is ridiculously clean. Everything I need, nothing I don't.”"
-                : "“My LinkedIn engagement 4x'd in the first week. This is unfair.”"}
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              — {isAdmin ? "Operations lead, SaaS startup" : "Maya R., Product Marketer"}
+                ? "Manage users, codes, revenue and analytics — all in one place."
+                : "Research, write, and visualize LinkedIn-ready posts in under 60 seconds — no Canva, no copy-paste."}
             </p>
           </div>
         </div>

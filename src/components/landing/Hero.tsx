@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { ThumbsUp, MessageCircle, Repeat2, Send, MoreHorizontal, Globe2 } from "lucide-react";
 
 export function Hero() {
   return (
@@ -25,7 +26,7 @@ export function Hero() {
         style={{ animationDelay: "180ms" }}
       >
         <Button asChild className="btn-gradient h-12 px-7 text-base">
-          <Link to="/signup">Start Free — No Card Needed →</Link>
+          <Link to="/signup">Try Free — No Card Needed</Link>
         </Button>
         <Button
           asChild
@@ -37,69 +38,143 @@ export function Hero() {
       </div>
 
       <div className="mt-16 fade-up" style={{ animationDelay: "260ms" }}>
-        <BrowserMockup />
+        <LinkedInPreview />
       </div>
     </section>
   );
 }
 
-function BrowserMockup() {
+function LinkedInPreview() {
+  const post = `How I got my first international client from Pakistan
+
+Most Pakistani freelancers think landing international clients is hard.
+
+It is not.
+
+The real problem is visibility.
+
+When I started, I did what most people do:
+• Tried random platforms
+• Sent cold proposals
+• Waited for replies
+
+Nothing worked.
+
+Then I realized something:
+Clients do not hire the best talent.
+They hire the most visible and well-positioned talent.
+
+So I changed my strategy and focused on:
+• Clear positioning (what I do + who I help)
+• Showing up consistently
+• Reaching out where global clients already are
+
+That is when things changed.
+
+Pakistani freelancers do not lack skill.
+They lack visibility.
+
+If you are trying to land your first international client:
+Stop focusing on where you are.
+Start focusing on how you show up.`;
+
   return (
-    <div className="ti-card ti-card-glow max-w-5xl mx-auto overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <span className="w-3 h-3 rounded-full bg-red-500/70" />
-        <span className="w-3 h-3 rounded-full bg-yellow-500/70" />
-        <span className="w-3 h-3 rounded-full bg-green-500/70" />
-        <span className="ml-3 text-xs text-muted-foreground">tipost.titechlabs.dev/app</span>
-      </div>
-      <div className="grid sm:grid-cols-2 gap-4 p-4 sm:p-6 bg-surface/40">
-        <FakePost
-          tone="primary"
-          title="AI in Pakistan: 5 ways founders are winning"
-          body="Pakistan's AI ecosystem is exploding. Local startups now ship LLM features in days, not months. Here are 5 patterns I've seen working in 2025…"
-          tags="#AI #Pakistan #Startups"
-        />
-        <FakePost
-          tone="teal"
-          title="The freelancer's hook formula"
-          body="Your first line decides whether anyone reads the second. The 3-line pattern that made my posts get 10x more saves last month…"
-          tags="#Freelancing #LinkedIn #Growth"
-        />
+    <div className="max-w-2xl mx-auto text-left">
+      <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground text-center mb-4">
+        Live preview — generated in 58 seconds
+      </p>
+      <div className="ti-card ti-card-glow overflow-hidden">
+        {/* Author row */}
+        <div className="flex items-start justify-between p-4 sm:p-5">
+          <div className="flex items-center gap-3">
+            <TiTechlabsAvatar />
+            <div>
+              <p className="text-sm font-semibold leading-tight">TiTechlabs</p>
+              <p className="text-xs text-muted-foreground leading-tight">
+                Building products for Pakistani founders & creators
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 inline-flex items-center gap-1">
+                1h · <Globe2 size={10} />
+              </p>
+            </div>
+          </div>
+          <button aria-label="More" className="text-muted-foreground hover:text-foreground p-1">
+            <MoreHorizontal size={18} />
+          </button>
+        </div>
+
+        {/* Post body */}
+        <div className="px-4 sm:px-5 pb-4">
+          <p className="text-[14.5px] leading-[1.55] whitespace-pre-line">
+            {post}
+          </p>
+          <p className="mt-3 text-sm" style={{ color: "hsl(var(--accent))" }}>
+            #Freelancing #Pakistan #LinkedIn #Visibility
+          </p>
+        </div>
+
+        {/* Generated visual */}
+        <div
+          className="h-44 sm:h-56 mx-4 sm:mx-5 rounded-xl border border-border flex items-center justify-center text-center px-6"
+          style={{
+            background:
+              "linear-gradient(135deg, hsl(var(--accent) / 0.85), hsl(var(--violet) / 0.85))",
+          }}
+        >
+          <p className="font-display text-white text-xl sm:text-2xl leading-tight">
+            Visibility &gt; Talent.<br />
+            <span className="opacity-80 text-base sm:text-lg font-normal">
+              How Pakistani freelancers win global clients.
+            </span>
+          </p>
+        </div>
+
+        {/* Reactions */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground px-5 py-3 border-t border-border mt-4">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex -space-x-1">
+              <span className="w-4 h-4 rounded-full bg-[hsl(var(--accent))] border border-card" />
+              <span className="w-4 h-4 rounded-full bg-[hsl(var(--accent-2))] border border-card" />
+              <span className="w-4 h-4 rounded-full bg-[hsl(var(--violet))] border border-card" />
+            </span>
+            312 reactions
+          </span>
+          <span>48 comments · 22 reposts</span>
+        </div>
+
+        {/* Action bar */}
+        <div className="grid grid-cols-4 border-t border-border text-xs">
+          {[
+            { icon: ThumbsUp, label: "Like" },
+            { icon: MessageCircle, label: "Comment" },
+            { icon: Repeat2, label: "Repost" },
+            { icon: Send, label: "Send" },
+          ].map(({ icon: Icon, label }) => (
+            <button
+              key={label}
+              className="flex items-center justify-center gap-1.5 py-3 text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
+            >
+              <Icon size={14} /> {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function FakePost({
-  tone,
-  title,
-  body,
-  tags,
-}: {
-  tone: "primary" | "teal";
-  title: string;
-  body: string;
-  tags: string;
-}) {
-  const grad =
-    tone === "primary"
-      ? "linear-gradient(135deg, hsl(var(--accent)/0.7), hsl(var(--violet)/0.7))"
-      : "linear-gradient(135deg, hsl(var(--accent-2)/0.7), hsl(var(--accent)/0.5))";
+function TiTechlabsAvatar() {
+  // Simple branded avatar — falls back gracefully if no logo image is provided.
   return (
-    <div className="ti-card overflow-hidden text-left">
-      <div className="h-32 sm:h-40" style={{ background: grad }} />
-      <div className="p-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-secondary" />
-          <div>
-            <p className="text-xs font-medium">Your Name</p>
-            <p className="text-[10px] text-muted-foreground">Founder · 1h</p>
-          </div>
-        </div>
-        <p className="mt-3 text-sm font-medium">{title}</p>
-        <p className="mt-2 text-xs text-muted-foreground line-clamp-3">{body}</p>
-        <p className="mt-3 text-xs" style={{ color: "hsl(var(--accent))" }}>{tags}</p>
-      </div>
+    <div
+      className="w-12 h-12 rounded-full flex items-center justify-center font-display text-white text-base shrink-0"
+      style={{
+        background: "var(--gradient-button)",
+        boxShadow: "var(--shadow-button)",
+      }}
+      aria-label="TiTechlabs"
+    >
+      Ti
     </div>
   );
 }
