@@ -1,6 +1,6 @@
 const stats = [
-  { value: "10x", label: "Faster than manual writing" },
-  { value: "300", label: "Posts per month (Pro)" },
+  { value: "<60s", label: "From topic to ready-to-post" },
+  { value: "10/day", label: "Posts on the Pro plan" },
   { value: "100%", label: "AI-researched content" },
   { value: "PKR", label: "Local pricing, no USD needed" },
 ];
