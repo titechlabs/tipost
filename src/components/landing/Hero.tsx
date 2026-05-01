@@ -79,84 +79,101 @@ Stop focusing on where you are.
 Start focusing on how you show up.`;
 
   return (
-    <div className="max-w-2xl mx-auto text-left">
+    <div className="max-w-5xl mx-auto text-left">
       <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground text-center mb-4">
         Live preview — generated in 58 seconds
       </p>
-      <div className="ti-card ti-card-glow overflow-hidden">
-        {/* Author row */}
-        <div className="flex items-start justify-between p-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <TiTechlabsAvatar />
-            <div>
-              <p className="text-sm font-semibold leading-tight">TiTechlabs</p>
-              <p className="text-xs text-muted-foreground leading-tight">
-                Building products for Pakistani founders & creators
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5 inline-flex items-center gap-1">
-                1h · <Globe2 size={10} />
-              </p>
+      <div className="grid gap-4 md:grid-cols-[55fr_45fr] md:items-stretch">
+        {/* LEFT: LinkedIn-style post card */}
+        <div className="ti-card ti-card-glow overflow-hidden flex flex-col">
+          {/* Author row */}
+          <div className="flex items-start justify-between p-4">
+            <div className="flex items-center gap-3">
+              <TiTechlabsAvatar />
+              <div>
+                <p className="text-sm font-semibold leading-tight">TiTechlabs</p>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  Building products for Pakistani founders & creators
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 inline-flex items-center gap-1">
+                  1h · <Globe2 size={10} />
+                </p>
+              </div>
             </div>
-          </div>
-          <button aria-label="More" className="text-muted-foreground hover:text-foreground p-1">
-            <MoreHorizontal size={18} />
-          </button>
-        </div>
-
-        {/* Post body */}
-        <div className="px-4 sm:px-5 pb-4">
-          <p className="text-[14.5px] leading-[1.55] whitespace-pre-line">
-            {post}
-          </p>
-          <p className="mt-3 text-sm" style={{ color: "hsl(var(--accent))" }}>
-            #Freelancing #Pakistan #LinkedIn #Visibility
-          </p>
-        </div>
-
-        {/* Generated visual */}
-        <div
-          className="h-44 sm:h-56 mx-4 sm:mx-5 rounded-xl border border-border flex items-center justify-center text-center px-6"
-          style={{
-            background:
-              "linear-gradient(135deg, hsl(var(--accent) / 0.85), hsl(var(--violet) / 0.85))",
-          }}
-        >
-          <p className="font-display text-white text-xl sm:text-2xl leading-tight">
-            Visibility &gt; Talent.<br />
-            <span className="opacity-80 text-base sm:text-lg font-normal">
-              How Pakistani freelancers win global clients.
-            </span>
-          </p>
-        </div>
-
-        {/* Reactions */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-5 py-3 border-t border-border mt-4">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="inline-flex -space-x-1">
-              <span className="w-4 h-4 rounded-full bg-[hsl(var(--accent))] border border-card" />
-              <span className="w-4 h-4 rounded-full bg-[hsl(var(--accent-2))] border border-card" />
-              <span className="w-4 h-4 rounded-full bg-[hsl(var(--violet))] border border-card" />
-            </span>
-            312 reactions
-          </span>
-          <span>48 comments · 22 reposts</span>
-        </div>
-
-        {/* Action bar */}
-        <div className="grid grid-cols-4 border-t border-border text-xs">
-          {[
-            { icon: ThumbsUp, label: "Like" },
-            { icon: MessageCircle, label: "Comment" },
-            { icon: Repeat2, label: "Repost" },
-            { icon: Send, label: "Send" },
-          ].map(({ icon: Icon, label }) => (
-            <button
-              key={label}
-              className="flex items-center justify-center gap-1.5 py-3 text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
-            >
-              <Icon size={14} /> {label}
+            <button aria-label="More" className="text-muted-foreground hover:text-foreground p-1">
+              <MoreHorizontal size={18} />
             </button>
-          ))}
+          </div>
+
+          {/* Post body — clamped with see more fade */}
+          <div className="px-4 pb-2 flex-1 relative">
+            <div className="relative max-h-[230px] overflow-hidden">
+              <p className="text-[14px] leading-[1.55] whitespace-pre-line">
+                {post}
+              </p>
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, transparent, hsl(var(--card)) 85%)",
+                }}
+              />
+            </div>
+            <button className="relative -mt-1 text-xs text-muted-foreground hover:text-foreground">
+              …see more
+            </button>
+          </div>
+
+          {/* Reactions */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground px-4 py-2 border-t border-border mt-2">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex -space-x-1">
+                <span className="w-4 h-4 rounded-full bg-[hsl(var(--accent))] border border-card" />
+                <span className="w-4 h-4 rounded-full bg-[hsl(var(--accent-2))] border border-card" />
+                <span className="w-4 h-4 rounded-full bg-[hsl(var(--violet))] border border-card" />
+              </span>
+              312
+            </span>
+            <span>48 comments · 22 reposts</span>
+          </div>
+
+          {/* Action bar */}
+          <div className="grid grid-cols-4 border-t border-border text-xs">
+            {[
+              { icon: ThumbsUp, label: "Like" },
+              { icon: MessageCircle, label: "Comment" },
+              { icon: Repeat2, label: "Repost" },
+              { icon: Send, label: "Send" },
+            ].map(({ icon: Icon, label }) => (
+              <button
+                key={label}
+                className="flex items-center justify-center gap-1.5 py-2.5 text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
+              >
+                <Icon size={14} /> {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: AI generated visual */}
+        <div className="flex flex-col">
+          <div
+            className="ti-card overflow-hidden flex-1 flex items-center justify-center text-center px-6 min-h-[280px]"
+            style={{
+              background:
+                "linear-gradient(135deg, hsl(var(--accent) / 0.85), hsl(var(--violet) / 0.85))",
+            }}
+          >
+            <p className="font-display text-white text-xl sm:text-2xl leading-tight">
+              Visibility &gt; Talent.<br />
+              <span className="opacity-80 text-base sm:text-lg font-normal">
+                How Pakistani freelancers win global clients.
+              </span>
+            </p>
+          </div>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground text-center mt-2">
+            AI generated visual
+          </p>
         </div>
       </div>
     </div>
