@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { LogOut, KeyRound } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { ChangePasswordDialog } from "@/components/app/ChangePasswordDialog";
@@ -54,7 +54,42 @@ export function TopBar({
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/70 border-b border-border">
       <div className="container flex items-center justify-between h-16">
-        <Logo />
+        <div className="flex items-center gap-8">
+          <Logo />
+          <nav className="hidden md:flex items-center gap-6">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `text-sm transition-colors ${
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/pricing"
+              className={({ isActive }) =>
+                `text-sm transition-colors ${
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`
+              }
+            >
+              Pricing
+            </NavLink>
+            <NavLink
+              to="/app"
+              className={({ isActive }) =>
+                `text-sm transition-colors ${
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`
+              }
+            >
+              Dashboard
+            </NavLink>
+          </nav>
+        </div>
         <div className="flex items-center gap-3">
           {plan && (
             <span
@@ -109,14 +144,17 @@ export function TopBar({
           </DropdownMenu>
         </div>
       </div>
-      <div className="sm:hidden container pb-3 flex gap-2 text-xs">
+      <div className="md:hidden container pb-3 flex flex-wrap items-center gap-2 text-xs">
+        <NavLink to="/" end className="text-muted-foreground hover:text-foreground px-2 py-1">Home</NavLink>
+        <NavLink to="/pricing" className="text-muted-foreground hover:text-foreground px-2 py-1">Pricing</NavLink>
+        <NavLink to="/app" className="text-muted-foreground hover:text-foreground px-2 py-1">Dashboard</NavLink>
         {plan && (
-          <span className={`px-2.5 py-1 rounded-full border ${planColor[plan]}`}>
+          <span className={`ml-auto px-2.5 py-1 rounded-full border ${planColor[plan]}`}>
             {plan.toUpperCase()}
           </span>
         )}
         <span className="text-muted-foreground border border-border rounded-full px-2.5 py-1">
-          {used}/{limit} posts today
+          {used}/{limit} today
         </span>
       </div>
       <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} email={email} />
