@@ -16,6 +16,13 @@ interface UserRow {
   created_at: string;
 }
 
+const PLAN_LIMITS: Record<string, number> = { free: 1, starter: 5, pro: 10 };
+const planLabel = (plan: string | null) => {
+  if (!plan) return "No plan";
+  const limit = PLAN_LIMITS[plan];
+  return limit ? `${plan} · ${limit}/day` : plan;
+};
+
 export default function Users() {
   const [rows, setRows] = useState<UserRow[]>([]);
   const [admins, setAdmins] = useState<Set<string>>(new Set());
@@ -88,8 +95,17 @@ export default function Users() {
                 const isAdmin = admins.has(r.id);
                 return (
                   <tr key={r.id} className="border-t border-border">
-                    <td className="p-3">{r.email ?? "—"}</td>
-                    <td className="p-3"><Badge variant="secondary" className="capitalize">{r.plan ?? "none"}</Badge></td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <span>{r.email ?? "—"}</span>
+                        {isAdmin && (
+                          <Badge className="capitalize" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
+                            Admin
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-3"><Badge variant="secondary" className="capitalize whitespace-nowrap">{planLabel(r.plan)}</Badge></td>
                     <td className="p-3 font-mono text-xs">{r.referral_code}</td>
                     <td className="p-3">{r.referral_count}</td>
                     <td className="p-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</td>
