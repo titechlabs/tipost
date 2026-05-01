@@ -36,7 +36,12 @@ interface Code {
   created_at: string;
 }
 
-const planLimits: Record<Plan, number> = { free: 2, starter: 10, pro: 30 };
+const planLimits: Record<Plan, number> = { free: 1, starter: 5, pro: 10 };
+const planLabels: Record<Plan, string> = {
+  free: "Free (1/day)",
+  starter: "Starter (5/day)",
+  pro: "Pro (10/day)",
+};
 
 function randomCode(prefix = "TIPOST") {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -167,9 +172,9 @@ export default function AccessCodes() {
                   <Select value={bulkPlan} onValueChange={(v) => setBulkPlan(v as Plan)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="free">Free (2/day)</SelectItem>
-                      <SelectItem value="starter">Starter (10/day)</SelectItem>
-                      <SelectItem value="pro">Pro (30/day)</SelectItem>
+                      <SelectItem value="free">{planLabels.free}</SelectItem>
+                      <SelectItem value="starter">{planLabels.starter}</SelectItem>
+                      <SelectItem value="pro">{planLabels.pro}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -193,9 +198,9 @@ export default function AccessCodes() {
                   <Select value={newPlan} onValueChange={(v) => setNewPlan(v as Plan)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="free">Free (2/day)</SelectItem>
-                      <SelectItem value="starter">Starter (10/day)</SelectItem>
-                      <SelectItem value="pro">Pro (30/day)</SelectItem>
+                      <SelectItem value="free">{planLabels.free}</SelectItem>
+                      <SelectItem value="starter">{planLabels.starter}</SelectItem>
+                      <SelectItem value="pro">{planLabels.pro}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
