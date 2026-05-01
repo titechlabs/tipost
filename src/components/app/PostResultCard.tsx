@@ -104,7 +104,7 @@ export function PostResultCard({
             />
           ) : (
             <div
-              className="w-full flex-1 h-[360px] rounded-xl bg-background/40 border border-border p-4 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto"
+              className="w-full flex-1 rounded-xl bg-background/40 border border-border p-4 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[360px]"
             >
               {text}
             </div>
@@ -133,7 +133,7 @@ export function PostResultCard({
           <img
             src={`data:image/jpeg;base64,${imageBase64}`}
             alt={`Post ${index} visual`}
-            className="w-full h-[360px] rounded-xl border border-border object-cover"
+            className="w-full rounded-xl border border-border object-cover self-start sticky top-0"
           />
         ) : (
           <div className="rounded-xl border border-dashed border-border bg-surface/40 grid place-items-center text-xs text-muted-foreground p-6 h-[360px]">
@@ -231,7 +231,7 @@ function LinkedInPreviewCard({
         <img
           src={`data:image/jpeg;base64,${imageBase64}`}
           alt=""
-          className="w-full border-t border-border object-cover max-h-48"
+          className="w-full border-t border-border object-cover max-h-36"
         />
       )}
     </div>
