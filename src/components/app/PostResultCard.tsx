@@ -91,7 +91,7 @@ export function PostResultCard({
         </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-[1fr_300px] md:items-stretch">
+      <div className="grid gap-5 md:grid-cols-[1fr_300px] md:items-start">
         {/* Post text — fixed height matched to image, internal scroll */}
         <div className="min-w-0 flex flex-col">
           {editing ? (
@@ -224,14 +224,14 @@ function LinkedInPreviewCard({
           </p>
         </div>
       </div>
-      <div className="px-4 pb-3 max-h-[40vh] overflow-y-auto">
+      <div className="px-4 pb-3 max-h-[45vh] overflow-y-auto">
         <p className="text-[14px] leading-[1.55] whitespace-pre-wrap">{text}</p>
       </div>
       {imageBase64 && (
         <img
           src={`data:image/jpeg;base64,${imageBase64}`}
           alt=""
-          className="w-full border-t border-border object-cover max-h-64"
+          className="w-full border-t border-border object-cover max-h-48"
         />
       )}
     </div>
