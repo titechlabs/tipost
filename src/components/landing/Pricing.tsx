@@ -18,7 +18,7 @@ export function Pricing() {
   }, []);
 
   return (
-    <section id="pricing" className="container py-20 sm:py-28">
+    <section id="pricing" className="container py-16 sm:py-20">
       <div className="text-center max-w-2xl mx-auto">
         <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "hsl(var(--accent))" }}>
           Pricing
@@ -31,7 +31,7 @@ export function Pricing() {
         </p>
       </div>
 
-      <div className="mt-14 grid gap-6 lg:grid-cols-3">
+      <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto items-stretch">
         <PlanCard
           name="Free"
           price="0"
