@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Check, Copy, Download, Linkedin, Eye, Pencil, Globe2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Check, Copy, Download, Linkedin, Eye, Pencil, Globe2, Lock } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const LINKEDIN_LIMIT = 3000;
 
@@ -20,16 +26,9 @@ export function PostResultCard({
 }) {
   const [text, setText] = useState(initialText);
   const [copied, setCopied] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize textarea to content
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 600)}px`;
-  }, [text]);
 
   const copyText = async () => {
     await navigator.clipboard.writeText(text);
@@ -69,30 +68,47 @@ export function PostResultCard({
           style={{ color: "hsl(var(--accent))" }}
         >
           Post {total ? `${index} / ${total}` : index}
-          <span className="text-muted-foreground inline-flex items-center gap-1 normal-case tracking-normal">
-            <Pencil size={11} /> Click to edit
-          </span>
         </p>
-        <button
-          type="button"
-          onClick={() => setShowPreview((v) => !v)}
-          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
-        >
-          <Eye size={13} />
-          {showPreview ? "Hide preview" : "LinkedIn preview"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setEditing((v) => !v);
+              if (!editing) setTimeout(() => ref.current?.focus(), 0);
+            }}
+            className="text-xs inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border hover:border-accent/60 hover:text-foreground text-muted-foreground"
+          >
+            {editing ? <Lock size={12} /> : <Pencil size={12} />}
+            {editing ? "Done" : "Edit"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="text-xs inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border hover:border-accent/60 hover:text-foreground text-muted-foreground"
+          >
+            <Eye size={12} /> Preview post
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-[1fr_300px]">
-        {/* Editable post text */}
-        <div className="min-w-0">
-          <textarea
-            ref={ref}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            spellCheck
-            className="w-full resize-none rounded-xl bg-background/40 border border-border focus:border-accent/60 focus-visible:outline-none p-4 text-sm leading-relaxed font-sans whitespace-pre-wrap min-h-[180px]"
-          />
+      <div className="grid gap-5 md:grid-cols-[1fr_300px] md:items-stretch">
+        {/* Post text — fixed height matched to image, internal scroll */}
+        <div className="min-w-0 flex flex-col">
+          {editing ? (
+            <textarea
+              ref={ref}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              spellCheck
+              className="w-full flex-1 h-[360px] resize-none rounded-xl bg-background/40 border border-accent/40 focus:border-accent/60 focus-visible:outline-none p-4 text-sm leading-relaxed font-sans whitespace-pre-wrap overflow-y-auto"
+            />
+          ) : (
+            <div
+              className="w-full flex-1 h-[360px] rounded-xl bg-background/40 border border-border p-4 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto"
+            >
+              {text}
+            </div>
+          )}
           <div className="mt-2 flex items-center justify-between text-xs">
             <span
               className={
@@ -117,21 +133,14 @@ export function PostResultCard({
           <img
             src={`data:image/jpeg;base64,${imageBase64}`}
             alt={`Post ${index} visual`}
-            className="w-full h-full max-h-[360px] rounded-xl border border-border object-cover"
+            className="w-full h-[360px] rounded-xl border border-border object-cover"
           />
         ) : (
-          <div className="rounded-xl border border-dashed border-border bg-surface/40 grid place-items-center text-xs text-muted-foreground p-6 min-h-[180px]">
+          <div className="rounded-xl border border-dashed border-border bg-surface/40 grid place-items-center text-xs text-muted-foreground p-6 h-[360px]">
             No visual generated
           </div>
         )}
       </div>
-
-      {/* LinkedIn preview */}
-      {showPreview && (
-        <div className="mt-5">
-          <LinkedInPreviewCard text={text} imageBase64={imageBase64} />
-        </div>
-      )}
 
       {/* Actions */}
       <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
@@ -166,6 +175,20 @@ export function PostResultCard({
           <Linkedin size={14} className="mr-1.5" /> Open LinkedIn
         </Button>
       </div>
+
+      {/* Centered LinkedIn preview modal */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-xl p-0 overflow-hidden bg-background border-border">
+          <DialogHeader className="px-5 pt-5 pb-2">
+            <DialogTitle className="text-sm font-medium text-muted-foreground">
+              LinkedIn preview
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-5 pb-5">
+            <LinkedInPreviewCard text={text} imageBase64={imageBase64} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -179,7 +202,7 @@ function LinkedInPreviewCard({
   imageBase64?: string;
 }) {
   return (
-    <div className="ti-card overflow-hidden max-w-xl">
+    <div className="ti-card overflow-hidden">
       <div className="flex items-start gap-3 p-4">
         <div
           className="w-11 h-11 rounded-full flex items-center justify-center font-display text-white text-sm shrink-0"
@@ -201,14 +224,14 @@ function LinkedInPreviewCard({
           </p>
         </div>
       </div>
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-3 max-h-[40vh] overflow-y-auto">
         <p className="text-[14px] leading-[1.55] whitespace-pre-wrap">{text}</p>
       </div>
       {imageBase64 && (
         <img
           src={`data:image/jpeg;base64,${imageBase64}`}
           alt=""
-          className="w-full border-t border-border object-cover max-h-72"
+          className="w-full border-t border-border object-cover max-h-64"
         />
       )}
     </div>
