@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Check, Copy, Download, Linkedin, Eye, Pencil, Globe2, Lock } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
