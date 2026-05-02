@@ -38,6 +38,17 @@ export default function AppPage() {
       .select("code_id,plan,post_credits")
       .eq("id", session.user.id)
       .maybeSingle();
+
+    // Count posts created today (used for accurate daily display across plans)
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const { count: todayCount } = await supabase
+      .from("post_history")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", session.user.id)
+      .gte("created_at", startOfDay.toISOString());
+    const usedToday = todayCount ?? 0;
+
     if (!u?.code_id) {
       // Free trial: use post_credits
       const credits = u?.post_credits ?? 0;
@@ -55,12 +66,17 @@ export default function AppPage() {
     await supabase.rpc("reset_daily_if_needed", { _code_id: u.code_id });
     const { data: c } = await supabase
       .from("access_codes")
-      .select("daily_used,daily_limit,plan")
+      .select("daily_used,daily_limit,plan,last_reset_date")
       .eq("id", u.code_id)
       .maybeSingle();
+    // If the reset hasn't happened yet (e.g. RPC failed), fall back to today's count
+    const today = new Date().toISOString().slice(0, 10);
+    const usedFromCode =
+      c?.last_reset_date === today ? c?.daily_used ?? 0 : 0;
+    const used = Math.max(usedFromCode, usedToday);
     setInfo({
       plan: (u.plan ?? c?.plan ?? "free") as Plan,
-      used: c?.daily_used ?? 0,
+      used,
       limit: c?.daily_limit ?? 2,
       codeId: u.code_id,
       credits: u.post_credits ?? 0,

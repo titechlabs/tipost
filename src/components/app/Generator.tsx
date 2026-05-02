@@ -50,18 +50,40 @@ export function Generator({
       if (error) {
         // Edge function returns 402 with upgrade flag when credits exhausted
         const ctx = (error as unknown as { context?: { body?: string } })?.context;
-        let upgrade = false;
+        let parsed: { error?: string; upgrade?: boolean; limit?: number } | null = null;
         try {
-          const parsed = ctx?.body ? JSON.parse(ctx.body) : null;
-          upgrade = !!parsed?.upgrade;
-          if (parsed?.error) toast.error(parsed.error);
-          else toast.error(error.message || "Generation failed");
+          parsed = ctx?.body ? JSON.parse(ctx.body) : null;
         } catch {
-          toast.error(error.message || "Generation failed");
+          parsed = null;
         }
-        if (upgrade) {
-          // Surface upgrade banner state implicitly by parent prop on next reload;
-          // user can click the visible upgrade CTA above.
+        const serverMsg = (parsed?.error || "").toLowerCase();
+        const isDailyLimit =
+          serverMsg.includes("daily limit") || serverMsg.includes("limit reached");
+        const isUpgrade = !!parsed?.upgrade || serverMsg.includes("no credits");
+
+        if (isDailyLimit) {
+          toast.warning(
+            "You've used all your posts for today. Your limit resets tomorrow at midnight.",
+          );
+        } else if (isUpgrade) {
+          toast.info(
+            "You've used your free post. Upgrade to Starter or Pro to generate more.",
+            {
+              action: {
+                label: "Upgrade",
+                onClick: () => {
+                  window.location.href = "/pricing";
+                },
+              },
+            },
+          );
+        } else {
+          // Hide raw "Edge Function returned a non-2xx status code" style errors
+          const friendly =
+            parsed?.error && !/edge function|non-2xx|status code/i.test(parsed.error)
+              ? parsed.error
+              : "Something went wrong while generating. Please try again.";
+          toast.error(friendly);
         }
         return;
       }

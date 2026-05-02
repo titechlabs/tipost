@@ -52,6 +52,7 @@ function randomCode(prefix = "TIPOST") {
 
 export default function AccessCodes() {
   const [rows, setRows] = useState<Code[]>([]);
+  const [emails, setEmails] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
@@ -73,7 +74,24 @@ export default function AccessCodes() {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(500);
-    setRows((data ?? []) as Code[]);
+    const list = (data ?? []) as Code[];
+    setRows(list);
+    const ids = Array.from(
+      new Set(list.map((r) => r.linked_user_id).filter(Boolean) as string[]),
+    );
+    if (ids.length) {
+      const { data: users } = await supabase
+        .from("users")
+        .select("id,email")
+        .in("id", ids);
+      const map: Record<string, string> = {};
+      (users ?? []).forEach((u: { id: string; email: string | null }) => {
+        if (u.email) map[u.id] = u.email;
+      });
+      setEmails(map);
+    } else {
+      setEmails({});
+    }
     setLoading(false);
   };
 
@@ -258,8 +276,14 @@ export default function AccessCodes() {
                       <span className="text-xs text-muted-foreground">{r.active ? "Active" : "Disabled"}</span>
                     </div>
                   </td>
-                  <td className="p-3 text-xs text-muted-foreground font-mono">
-                    {r.linked_user_id ? r.linked_user_id.slice(0, 8) : "—"}
+                  <td className="p-3 text-xs text-muted-foreground">
+                    {r.linked_user_id
+                      ? emails[r.linked_user_id] ?? (
+                          <span className="font-mono">
+                            {r.linked_user_id.slice(0, 8)}…
+                          </span>
+                        )
+                      : "—"}
                   </td>
                   <td className="p-3 text-right">
                     <div className="inline-flex gap-1">
