@@ -1,8 +1,7 @@
 const steps = [
-  { n: 1, title: "Enter Your Topic", body: "Type anything: AI in Pakistan, Instagram Growth, Freelancing Tips." },
-  { n: 2, title: "AI Researches", body: "Searches the web for up-to-date information on your topic." },
-  { n: 3, title: "Posts Are Written", body: "Professional LinkedIn posts with formatting and hashtags." },
-  { n: 4, title: "Copy & Post", body: "Copy text, save image, open LinkedIn — done in one click." },
+  { n: 1, title: "Enter your topic", body: "Type any idea: AI, freelancing, growth, hiring." },
+  { n: 2, title: "AI generates a post", body: "Researched, formatted, and ready for LinkedIn." },
+  { n: 3, title: "Get post + image", body: "Copy the text, download the visual, publish in one click." },
 ];
 
 export function HowItWorks() {
@@ -14,10 +13,10 @@ export function HowItWorks() {
         </p>
         <h2 className="font-display text-3xl sm:text-5xl mt-4">From topic to post in 60 seconds</h2>
       </div>
-      <div className="relative mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="relative mt-14 grid gap-8 sm:grid-cols-3 max-w-4xl mx-auto">
         <div
           aria-hidden
-          className="hidden lg:block absolute top-7 left-[12%] right-[12%] border-t border-dashed border-border"
+          className="hidden sm:block absolute top-7 left-[16%] right-[16%] border-t border-dashed border-border"
         />
         {steps.map((s, i) => (
           <div key={s.n} className="text-center relative fade-up" style={{ animationDelay: `${i * 80}ms` }}>
