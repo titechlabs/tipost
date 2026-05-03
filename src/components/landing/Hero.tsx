@@ -10,32 +10,38 @@ export function Hero() {
         className="font-display font-extrabold mt-6 leading-[1.05] fade-up"
         style={{ fontSize: "clamp(42px, 7vw, 72px)", animationDelay: "60ms" }}
       >
-        LinkedIn Posts That
+        Generate Viral LinkedIn Posts in
         <br />
-        <span className="gradient-text">Actually Get Noticed</span>
+        <span className="gradient-text">60 Seconds with AI</span>
       </h1>
       <p
         className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto fade-up"
         style={{ animationDelay: "120ms" }}
       >
-        TiPost researches your topic, writes compelling posts, and generates matching
-        visuals — all in under 60 seconds.
+        Just enter your topic — TiPost, the AI LinkedIn post generator, writes your
+        post and creates a matching image instantly.
       </p>
       <div
         className="mt-8 flex flex-col sm:flex-row gap-3 justify-center fade-up"
         style={{ animationDelay: "180ms" }}
       >
         <Button asChild className="btn-gradient h-12 px-7 text-base">
-          <Link to="/signup">Try Free — No Card Needed</Link>
+          <Link to="/signup">Generate Your First Post Free</Link>
         </Button>
         <Button
           asChild
           variant="outline"
           className="h-12 px-7 text-base rounded-full border-border bg-transparent hover:bg-secondary"
         >
-          <a href="#how">See how it works</a>
+          <a href="#how">See Demo</a>
         </Button>
       </div>
+      <p
+        className="mt-4 text-xs text-muted-foreground fade-up"
+        style={{ animationDelay: "220ms" }}
+      >
+        Free to start · No credit card required
+      </p>
 
       <div className="mt-16 fade-up" style={{ animationDelay: "260ms" }}>
         <LinkedInPreview />

@@ -1,33 +1,23 @@
 const features = [
   {
-    icon: "🔍",
-    title: "Real-Time Research",
-    body: "Searches the web for the latest insights, stats, and trends before writing.",
-  },
-  {
     icon: "✍️",
-    title: "Professional Writing",
-    body: "Strong hook, educational body, source attribution, hashtags, and a clear CTA.",
+    title: "AI-generated LinkedIn posts",
+    body: "Never stare at a blank page again.",
   },
   {
     icon: "🖼️",
-    title: "AI-Generated Visuals",
-    body: "LinkedIn-optimized 1200×627 image per post — no Canva needed.",
+    title: "Auto-generated images",
+    body: "Stop the scroll with a matching visual every time.",
+  },
+  {
+    icon: "🚀",
+    title: "Optimized for engagement",
+    body: "Hooks, structure, and CTAs that earn likes and comments.",
   },
   {
     icon: "⚡",
-    title: "Bulk Generation",
-    body: "Up to 10 posts in one run, done in under 2 minutes.",
-  },
-  {
-    icon: "📋",
-    title: "One-Click Copy & Post",
-    body: "Copy text, download the image, or open LinkedIn directly.",
-  },
-  {
-    icon: "🇵🇰",
-    title: "Local Pricing",
-    body: "Pay in PKR, no USD conversions, cancel anytime.",
+    title: "Under 60 seconds",
+    body: "Post in the time it takes to make chai.",
   },
 ];
 
@@ -45,7 +35,7 @@ export function Features() {
           Not just a text generator — TiPost researches, writes, and visualizes your content end to end.
         </p>
       </div>
-      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f, i) => (
           <div
             key={f.title}
